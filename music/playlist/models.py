@@ -1,14 +1,21 @@
+"""
+Playlist Models File
+"""
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.core.mail import send_mail
+
 
 # Create your models here.
 
 
 class Song(models.Model):
+
+    """
+    This is a song model
+    """
 
     song_name = models.CharField(max_length=100)
     time_offer = models.DateTimeField(blank=True,null=True)
@@ -17,11 +24,21 @@ class Song(models.Model):
 
 
     def __str__(self):
-        return self.song_name
+
+        """
+        This function returns the name of the  song in
+        string format it is pythons built-in function
+        """
+        return '{self.song_name}'.format(self=self)
 
 
 
 class Album(models.Model):
+
+    """
+    This is Album Model it has Foreign Key relation with user and
+    many to many realtion with Song mode
+    """
 
     PRIVATE = 'private'
     PUBLIC = 'public'
@@ -37,11 +54,21 @@ class Album(models.Model):
 
     def __str__(self):
 
-        return self.album_name
+        """
+        This function returns the name of the  album in
+        string format it is pythons built-in function
+        """
+
+        return '{self.album_name}'.format(self=self)
 
 
 
 class Comments(models.Model):
+
+    """
+    This is Comment model it has Foreign Key Relation
+    with User and Song model
+    """
 
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     songs = models .ForeignKey(Song,on_delete=models.CASCADE,related_name='comments')
@@ -50,10 +77,20 @@ class Comments(models.Model):
 
     def __str__(self):
 
-        return self.comment
+        """
+        This function returns the comment on the  song in
+        string format it is pythons built-in function
+        """
+
+        return '{self.comment}'.format(self=self)
 
 
 class Favorite(models.Model):
+
+    """
+    This is Favorite model it has foreign key relation with
+    Song and User model
+    """
 
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     songs = models .ForeignKey(Song,on_delete=models.CASCADE)
@@ -61,10 +98,20 @@ class Favorite(models.Model):
 
     def __str__(self) :
 
-        return self.songs.song_name
+        """
+        This function returns the name of the  song in
+        string format it is pythons built-in function
+        """
+
+        return '{self.songs.song_name}'.format(self=self)
 
 
 class Like(models.Model):
+
+    """
+    This is Like model it has foreign key relation with
+    Song and User model
+    """
 
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     songs = models .ForeignKey(Song,on_delete=models.CASCADE)
@@ -73,10 +120,19 @@ class Like(models.Model):
 
     def __str__(self) :
 
-        return self.songs.song_name
+        """
+        This function returns the name of the  song in
+        string format it is pythons built-in function
+        """
+        return "{self.songs.song_name}".format(self=self)
 
 
 class Follow(models.Model):
+
+    """
+    This is Follow model it has foreign key relation with
+    Album and User model
+    """
 
     user =  models.ForeignKey(User,on_delete=models.CASCADE)
     album  = models.ForeignKey(Album,on_delete=models.CASCADE)
@@ -85,18 +141,27 @@ class Follow(models.Model):
 
     def __str__(self):
 
-        return  self.album.album_name
+        """
+        This function returns the name of the  song in
+        string format it is pythons built-in function
+        """
+
+        return  '{self.album.album_name}'.format(self=self)
 
 
 
-# Function used to send emails this is a test email they don not send mail on gmail 
+# Function used to send emails this is a test email they don not send mail on gmail
 
 @receiver(post_save, sender=Album)
-def SendEmail(sender , instance, **kwargs):
+def send_email( instance):
 
+    """
+    This Function is used to send email to followers of album whenever an album is updated
+    """
 
-        email_sender = instance.creater.email
-        followers = Follow.objects.filter(follow=True)
-        for followers in followers:
+    email_sender = instance.creater.email
+    followers = Follow.objects.filter(follow=True)
+    for follower in followers:
 
-            send_mail(str( instance.album_name),'New Song added in Album',email_sender, [followers.user.email], fail_silently=False)
+        send_mail(str( instance.album_name),'New Song added in Album',email_sender,
+                [follower.user.email], fail_silently=False)
